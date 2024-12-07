@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do the Magic Here ✨</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .column {
+            padding: 20px;
+        }
+        .column:first-child {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-wrapper {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        input {
+            margin-right: 10px;
+            padding: 5px;
+            font-size: 14px; /* Adjusted font size */
+            width: 800px; /* Set width enough to accommodate 100 characters */
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow-x: auto; /* Allow horizontal scrolling if the text is too long */
+            font-family: 'Courier New', monospace; /* Monospace font to ensure uniform character width */
+        }
+        .counter {
+            font-size: 12px; /* Smaller font for the counter */
+            color: gray;
+        }
+        button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            margin-right: 10px;
+            padding: 10px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .tab-button.active {
+            background-color: #ddd;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- First Column -->
+<div class="column" id="input-column">
+    <div id="inputs-container"></div>
+    <button id="add-more">Add More</button>
+    <button id="clear-inputs" style="float: right;">Clear All</button>
+</div>
+
+<!-- Second Column -->
+<div class="column">
+
+<!-- To add more chapters, add one more button in the "tabs" div and one more div with the id same as the data-tab -->
+    <div class="tabs">
+        <button class="tab-button active" data-tab="chapter1">Chapter 1</button>
+        <button class="tab-button" data-tab="chapter2">Chapter 2</button>
+        <button class="tab-button" data-tab="chapter3">Chapter 3</button>
+        <button class="tab-button" data-tab="chapter4">Chapter 4</button>
+    </div>
+    <div id="chapter1" class="tab-content active">
+        <h2>Chapter 1 Content</h2>
+        <p>Content of Chapter 1...</p>
+    </div>
+    <div id="chapter2" class="tab-content">
+        <h2>Chapter 2 Content</h2>
+        <p>Content of Chapter 2...</p>
+    </div>
+    <div id="chapter3" class="tab-content">
+        <h2>Chapter 3 Content</h2>
+        <p>Content of Chapter 3...</p>
+    </div>
+</div>
+
+<script>
+// Load previous input data from localStorage if available
+function loadInputs() {
+    const inputsData = JSON.parse(localStorage.getItem('inputsData')) || [];
+    const inputsContainer = document.getElementById('inputs-container');
+    inputsContainer.innerHTML = ''; // Clear current inputs
+
+    inputsData.forEach((inputData, index) => {
+        addInputField(inputData.value, index + 1);
+    });
+}
+
+// Save input data to localStorage
+function saveInputs() {
+    const inputs = document.querySelectorAll('.input-wrapper input');
+    const inputsData = [];
+    inputs.forEach(input => {
+        inputsData.push({ value: input.value });
+    });
+    localStorage.setItem('inputsData', JSON.stringify(inputsData));
+}
+
+// Create an input field and counter
+function addInputField(value = '', index) {
+    const inputsContainer = document.getElementById('inputs-container');
+
+    const inputWrapper = document.createElement('div');
+    inputWrapper.classList.add('input-wrapper');
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = value;
+    input.placeholder = `Type Here`;
+    input.addEventListener('input', updateCounter);
+
+    const counter = document.createElement('div');
+    counter.classList.add('counter');
+    counter.textContent = `0 characters`;
+
+    inputWrapper.appendChild(input);
+    inputWrapper.appendChild(counter);
+    inputsContainer.appendChild(inputWrapper);
+
+    // Update character count initially
+    updateCounter({ target: input });
+
+    // Update character count dynamically
+    function updateCounter(event) {
+        const currentInput = event.target;
+        const currentCounter = currentInput.nextElementSibling;
+        const charCount = currentInput.value.length;
+        currentCounter.textContent = `${charCount}`;
+        saveInputs();
+    }
+}
+
+// Initially add input fields if no data is stored in localStorage
+document.addEventListener('DOMContentLoaded', () => {
+    const inputsData = JSON.parse(localStorage.getItem('inputsData'));
+    
+    if (!inputsData || inputsData.length === 0) {
+        // If no data is stored, add 15 input fields initially
+        for (let i = 1; i <= 15; i++) {
+            addInputField('', i);
+        }
+    } else {
+        // If data exists, just load the saved inputs
+        loadInputs();
+    }
+});
+
+// Add more input fields
+document.getElementById('add-more').addEventListener('click', () => {
+    const currentInputCount = document.querySelectorAll('.input-wrapper').length;
+    addInputField('', currentInputCount + 1);
+});
+
+// Clear all inputs
+document.getElementById('clear-inputs').addEventListener('click', () => {
+    localStorage.removeItem('inputsData');
+    loadInputs(); // Reload inputs as empty
+});
+
+// Handle tab switching
+const tabButtons = document.querySelectorAll('.tab-button');
+tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // Toggle active class for tabs
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Show the corresponding content
+        const tabContent = document.querySelectorAll('.tab-content');
+        tabContent.forEach(content => content.classList.remove('active'));
+        
+        const selectedTabContent = document.getElementById(button.getAttribute('data-tab'));
+        selectedTabContent.classList.add('active');
+    });
+});
+
+// Initial load
+loadInputs();
+</script>
+
+
+</body>
+</html>
