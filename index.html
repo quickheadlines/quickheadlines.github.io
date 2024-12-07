@@ -74,6 +74,7 @@
 <!-- First Column -->
 <div class="column" id="input-column">
     <div id="inputs-container"></div>
+    <button id="copy-all">Copy All</button> <!-- Copy All Button -->
     <button id="add-more">Add More</button>
     <button id="clear-inputs" style="float: right;">Clear All</button>
 </div>
@@ -202,10 +203,22 @@ tabButtons.forEach(button => {
     });
 });
 
+// Copy all input field content to clipboard with tabs between them
+document.getElementById('copy-all').addEventListener('click', () => {
+    const inputs = document.querySelectorAll('.input-wrapper input');
+    const values = Array.from(inputs).map(input => input.value).join('\t'); // Join with tabs
+    
+    // Copy the content to clipboard
+    navigator.clipboard.writeText(values).then(() => {
+        alert('Content copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+    });
+});
+
 // Initial load
 loadInputs();
 </script>
-
 
 </body>
 </html>
